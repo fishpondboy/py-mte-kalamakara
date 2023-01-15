@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+  <main id="main">
+
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact" >
+      <div class="container">
+
+        <div style="padding-top: 30px">
+
+        </div>
+
+        <div class="row">
+
+
+          <div class="col-lg-8 mt-6 mt-lg-0 d-flex align-items-stretch">
+
+
+            <div class="php-email-form">
+
+              <div class="form-row">
+                <div class="form-group col-md-12">
+                  <input type="hidden" id="upload_status" value="0">
+                  <form action="/upload/" method="POST" enctype="multipart/form-data" name="formInput" id="formInput">
+                    {% csrf_token %}
+                    <label>Upload X-Ray Image (jpg, png) / CT-Scan (NIFTI).</label>  <label id="progress"></label>
+
+                    
+                    <div class="form-control">
+                      <input type="file" name="fileInput" id="fileInput"  >
+                      <input type="hidden" id="hidden_submit">
+
+                    </div>
+                  </form>
+                </div>
+
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label for="name">Patient ID</label>
+                  <input type="text" name="patient_id" class="form-control" id="patient_id" data-rule="minlen:4" data-msg="Please enter at least 4 chars" />
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="name">Sex</label>
+                  <select class="form-control" name="sex" id="sex" data-rule="sex" data-msg="Select Sex" />>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>                  
+
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="name">Test Type</label>
+                  <select class="form-control" name="submission_type" id="submission_type" data-rule="submission_type" data-msg="Select Type" />>
+                    <option value="xray">X-Ray</option>
+                    <option value="ctscan">CT-Scan</option>
+                  </select>                  
+
+                </div>
+
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Age</label>
+                  <input type="number" name="age" class="form-control" id="age" data-rule="min:3"  data-msg="Please enter Age" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Fever Temperature</label>
+                  <input type="number" name="fever_temp" class="form-control" id="fever_temp" data-rule="fever_temp" data-msg="Please enter Fever Temperature" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Fever Duration (days)</label>
+                  <input type="number" name="fever_duration" class="form-control" id="fever_duration" data-rule="fever_duration" data-msg="Please enter Fever Duration (in days)" />
+                  <div class="validate"></div>
+                </div>
+
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Other Conditions</label>
+                  <input type="text" class="form-control" name="other_conditions" id="other_conditions" data-rule="minlen:0" data-msg="Please enter at least 8 chars of subject" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Comorbidities</label>
+                  <input type="text" class="form-control" name="comorbidities" id="comorbidities" data-rule="minlen:0" data-msg="Please enter at least 8 chars of comorbidities" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Interpretation</label>
+                  <input type="text" class="form-control" name="interpretation" id="interpretation" data-rule="minlen:0" data-msg="Please enter at least 8 chars of subject" />
+                  <div class="validate"></div>
+                </div>
+              </div>
+
+              <div class="form-row show-xray">
+                <div class="col-md-12">
+                    <h4 >Symptoms</h4>
+                </div>
+              </div>
+
+              <div class="form-row show-xray">
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Cough <br> <input type="checkbox" id="symptom_cough" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Sore Throat <br> <input type="checkbox" id="symptom_sore_throat"  data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Shiver <br> <input type="checkbox" id="symptom_shiver" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Headache <br> <input type="checkbox" id="symptom_headache" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Faint <br><input type="checkbox" id="symptom_faint" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Nausea <br> <input type="checkbox" id="symptom_nausea" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Diarrhea <br> <input type="checkbox" id="symptom_diarrhea" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Muscleache <br> <input type="checkbox" id="symptom_muscleache" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Abdominal Pain <br> <input type="checkbox" id="symptom_abdominal_pain" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Hard to Breathe <br> <input type="checkbox" id="symptom_hard_to_breathe" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+
+              </div>
+              <hr>
+              <div class="form-row">
+                <div class="form-group col-md-12">
+                    <button id="submit_btn" type="button" class="btn btn-primary btn-lg">Submit Test</button>
+                    &nbsp;&nbsp;
+                    <label id="message">Please fill form above before submission</label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- File upload form -->
+          </div>
+
+
+          <div class="col-lg-4 d-flex align-items-stretch">
+
+            <div class="info">
+
+              <div class="form-row">
+                <div class="col-md-12">
+
+                      <h4>Latest Submission</h4>
+
+                </div>
+              </div>
+
+              <div class="flex pemisah">
+              ABC<br>
+              ABC<br>
+              ABC<br>
+              
+              </div>
+
+              <div class="flex pemisah">
+              DEF<br>
+              DEF<br>
+              DEF<br>
+              
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section><!-- End Contact Section -->
+
+  </main><!-- End #main -->
+
+{% endblock %}  
