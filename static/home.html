@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block hero %}
+  <section id="hero" class="d-flex align-items-center">
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 pt-5 pt-lg-0 order-2 order-lg-1 d-flex flex-column justify-content-center">
+          <h1>Let's fight COVID-19</h1>
+          <h2>We're on a mission to to help you predict COVID-19 given Chest X-Ray or CT-Scan images as well as patients clinical dataset</h2>
+          <div class="d-flex">
+            <a href="submit_xray" class="btn-get-started scrollto">
+              X-Ray 
+            </a>
+            &nbsp;&nbsp;
+            <a href="submit_ctscan" class="btn-get-started scrollto">CT-Scan</a>
+            <a href="https://www.youtube.com/watch?v=7l1NU8HHc0U" class="venobox btn-watch-video" data-vbtype="video" data-autoplay="true"> Watch Video <i class="icofont-play-alt-2"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-6 order-1 order-lg-2 hero-img">
+          <img src="{% static 'assets/img/logo-kalamakara.png' %}" class="img-fluid animated" alt="">
+        </div>
+      </div>
+    </div>
+
+  </section><!-- End Hero -->
+{% endblock %}
+
+{% block main %}
+  <main id="main">
+
+
+    <!-- ======= About Section ======= -->
+    <section id="about" class="about">
+      <div class="container">
+
+        <div class="row">
+          <div class="col-lg-6">
+            <img src="{% static 'assets/img/radiologist.jpg' %}" class="img-fluid" alt="">
+          </div>
+          <div class="col-lg-6 pt-4 pt-lg-0 content">
+            <h3>Project Medic-Innovate.AI</h3>
+            <p class="font-italic">
+                Early diagnostic on CT-scan of COVID-19 than RT-PCR COVID-19 test using machine learning to assist medical staff for optimal COVID-19 therapy. Applying Artificial Intelligence on COVID-19 diagnostic using:
+            </p>
+            <ul>
+              <li><i class="icofont-check-circled"></i>X-Ray images
+              </li>
+              <li><i class="icofont-check-circled"></i>CT-Scan images
+              </li>
+              <li><i class="icofont-check-circled"></i>Patient's clinical data</li>
+            </ul>
+
+            <p>
+                This research is not only used in diagnosing but also in determining disease staging, based on clinical, laboratory, 
+                and radiological symptoms found in chest X-Rays and CT-Scans. Determining disease staging can be used as a reference 
+                in disease assessment to be used in the determination of disease mortality.
+            </p>
+
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End About Section -->
+
+    <!-- ======= Counts Section ======= -->
+    <section id="counts" class="counts">
+      <div class="container">
+
+        <div class="row counters">
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-toggle="counter-up">{{ jml_total }}</span>
+            <p>Tests Processed</p>
+          </div>
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-toggle="counter-up">720</span>
+            <p>X-Ray Training Data</p>
+          </div>
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-toggle="counter-up">28</span>
+            <p>CT-Scans Training Data</p>
+          </div>
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-toggle="counter-up">17</span>
+            <p>Radiologist & AI Experts Involved</p>
+          </div>
+
+        </div>
+
+      </div>
+    </section><!-- End Counts Section -->
+
+
+  </main><!-- End #main -->
+{% endblock %}  

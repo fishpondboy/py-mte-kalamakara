@@ -1,0 +1,10 @@
+django==3.2
+django-import-export==2.5.0
+django-background-tasks==1.2.5
+gunicorn==20.1.0
+requests==2.25.1 
+pydicom
+pillow
+pandas
+matplotlib
+opencv-python
