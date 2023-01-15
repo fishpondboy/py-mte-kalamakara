@@ -1,1 +1,3 @@
 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
+
+git filter-branch -f --index-filter 'git rm --cached --ignore-unmatch fixtures/11_user_answer.json'
