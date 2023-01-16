@@ -1,0 +1,732 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+  <main id="main">
+
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact" >
+      <div class="container">
+
+        <div style="padding-top: 30px">
+
+        </div>
+
+        <div class="row">
+
+
+          <div class="col-lg-8 mt-6 mt-lg-0 d-flex align-items-stretch">
+
+
+            <div class="php-email-form">
+
+              <div class="form-row">
+                <div class="form-group col-md-8">
+                  <input type="hidden" id="upload_status" value="0">
+                  <input type="hidden" id="csrf_token" value='{{ csrf_token }}'>
+                  
+                  <input type="hidden" id="file_location" value="">
+                  <form action="/upload/" method="POST" enctype="multipart/form-data" name="formInput" id="formInput">
+                    {% csrf_token %}
+                    <label>Upload X-Ray Image (jpg, png) / CT-Scan (Zipfile DICOM).</label>  
+
+                    
+                    <div class="form-control">
+                      <input type="file" name="fileInput" id="fileInput"  >
+                      <input type="hidden" id="hidden_submit">
+
+                    </div>
+                  </form>
+                  <label id="progress"></label>
+                </div>
+
+                <div class="form-group col-md-4">
+                  <label for="name">Test Type</label>
+                  <select class="form-control" name="submission_type" id="submission_type" data-rule="submission_type" data-msg="Select Type" />>
+                    <option value="xray">X-Ray</option>
+                    <option value="ctscan">CT-Scan</option>
+                  </select>                  
+
+                </div>
+
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6" >
+                  <img id="view_upload_image" class="view_upload_image_preview">
+                </div>
+                <div class="form-group col-md-6" >
+                  <img id="view_result_image" class="view_upload_image_preview">
+                </div>
+              </div>
+
+              <div class="form-row" id="result_info">
+                <div class="form-group col-md-12" style="text-align: center;">
+                  <h2>Result: <p id="result_prediction"></p></h2>
+                </div>
+                <div class="form-group col-md-4"  style="text-align: center;">
+                  <label for="name">Normal</label>
+                  <p id="result_prob_normal"></p>
+                </div>
+                <div class="form-group col-md-4"  style="text-align: center;">
+                  <label for="name">Pneumonia</label>
+                  <p id="result_prob_pneu"></p>
+                </div>
+                <div class="form-group col-md-4"  style="text-align: center;">
+                  <label for="name">Covid-19</label>
+                  <p id="result_prob_covid"></p>
+                </div>
+                <div class="form-group col-md-12">
+                  <hr>
+                </div>
+              </div>
+
+              <input type="hidden" name="record_id" id="record_id" value="">
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label for="name">Patient ID</label>
+                  <input type="text" name="patient_id" class="form-control" id="patient_id" data-rule="minlen:4" data-msg="Please enter at least 4 chars" />
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="name">Sex</label>
+                  <select class="form-control" name="sex" id="sex" data-rule="sex" data-msg="Select Sex" >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>                  
+
+                </div>
+
+                <div class="form-group col-md-4">
+                  <label for="name">Age</label>
+                  <input type="number" name="age" class="form-control" id="age" data-rule="min:3"  data-msg="Please enter Age" value="0"/>
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Fever Temperature</label>
+                  <input type="number" name="fever_temp" class="form-control" id="fever_temp" data-rule="fever_temp" data-msg="Please enter Fever Temperature" value="0" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Fever Duration (days)</label>
+                  <input type="number" name="fever_duration" class="form-control" id="fever_duration" data-rule="fever_duration" data-msg="Please enter Fever Duration (in days)" value="0" />
+                  <div class="validate"></div>
+                </div>
+
+                <div class="form-group col-md-4 show-xray">
+                  <label for="name">Other Conditions</label>
+                  <input type="text" class="form-control" name="other_conditions" id="other_conditions" data-rule="minlen:2" data-msg="Please enter at least 2 chars of subject or type 'none'" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-6 show-xray">
+                  <label for="name">Comorbidities</label>
+                  <input type="text" class="form-control" name="comorbidities" id="comorbidities" data-rule="minlen:2" data-msg="Please enter at least 8 chars of comorbidities or type 'none'" />
+                  <div class="validate"></div>
+                </div>
+                <div class="form-group col-md-6 show-xray">
+                  <label for="name">Interpretation</label>
+                  <input type="text" class="form-control" name="interpretation" id="interpretation" data-rule="minlen:2" data-msg="Please enter at least 8 chars of subject or type 'none'" />
+                  <div class="validate"></div>
+                </div>
+              </div>
+
+              <div class="form-row show-xray">
+                <div class="col-md-12">
+                    <h4 >Symptoms</h4>
+                </div>
+              </div>
+
+              <div class="form-row show-xray">
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Flu <br> <input type="checkbox" id="symptom_flu" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Cough <br> <input type="checkbox" id="symptom_cough" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Sore Throat <br> <input type="checkbox" id="symptom_sore_throat"  data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Shiver <br> <input type="checkbox" id="symptom_shiver" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Headache <br> <input type="checkbox" id="symptom_headache" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Faint <br><input type="checkbox" id="symptom_faint" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Nausea <br> <input type="checkbox" id="symptom_nausea" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Diarrhea <br> <input type="checkbox" id="symptom_diarrhea" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Muscleache <br> <input type="checkbox" id="symptom_muscleache" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Abdominal Pain <br> <input type="checkbox" id="symptom_abdominal_pain" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+                <div class="col-md-3 col-sm-4 jeda_symptoms">
+                  <!-- Rounded switch -->
+                  Hard to Breathe <br> <input type="checkbox" id="symptom_hard_to_breathe" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="danger" data-offstyle="success" >
+                </div>
+
+              </div>
+              <hr>
+              <div class="form-row">
+                <div class="form-group col-md-12">
+                    <button id="submit_btn" type="button" class="btn btn-primary btn-lg">Submit Test</button>
+                    &nbsp;&nbsp;
+                    <label id="message">Please fill form above before submission</label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- File upload form -->
+          </div>
+
+
+          <div class="col-lg-4 d-flex align-items-stretch">
+            <div class="info">
+
+              <div class="form-row">
+                <div class="col-md-12">
+                      <h4>Latest Submission</h4> 
+                </div>
+              </div>
+
+              <div id="my_latest_submissions">
+              </div>
+              <a id="link_all_my_submissions" href="/my_submissions/"></a>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- End Contact Section -->
+
+  </main><!-- End #main -->
+
+
+<script type="text/javascript">
+/* CUSTOM SCRIPT */
+
+function capitalize(words) {
+   var separateWord = words.toLowerCase().split(' ');
+   for (var i = 0; i < separateWord.length; i++) {
+      separateWord[i] = separateWord[i].charAt(0).toUpperCase() +
+      separateWord[i].substring(1);
+   }
+   return separateWord.join(' ');
+}
+
+function clear_forms() {
+
+  $("#record_id").val("");
+  $("#patient_id").val("");
+  $("#sex").val("male");
+  $("#submission_type").val("xray");
+  $("#age").val("0");
+  $("#fever_temp").val("0");
+  $("#fever_duration").val("0");
+  $("#other_conditions").val("");
+  $("#comorbidities").val("");
+  $("#interpretation").val("");
+  $("#symptom_flu").prop('checked', false);
+  $("#symptom_cough").prop('checked', false);
+  $("#symptom_sore_throat").prop('checked', false);
+  $("#symptom_shiver").prop('checked', false);
+  $("#symptom_headache").prop('checked', false);
+  $("#symptom_faint").prop('checked', false);
+  $("#symptom_nausea").prop('checked', false);
+  $("#symptom_diarrhea").prop('checked', false);
+  $("#symptom_muscleache").prop('checked', false);
+  $("#symptom_abdominal_pain").prop('checked', false);
+  $("#symptom_hard_to_breathe").prop('checked', false);
+  $("#file_location").val("");
+  $("#fileInput").val(null);
+  $("#progress").html("");
+  $("#view_upload_image").removeAttr('src')
+
+  validateForm();
+}
+
+function load_my_latest_submissions() {
+
+  $.ajax({
+      type: 'GET',
+      url: '/api_latest_submission/?limit=5',
+      error:function(){
+  
+      },
+      success: function(resp){
+        $("#my_latest_submissions").empty();
+        var all_div = "";
+        if(resp.stat == 1) {
+          resp.latest.forEach(function(item) {
+            var d = new Date(Date.parse(item.ts_submission));
+            var tmp_date = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
+            var media = "";
+
+            const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+            const nameExt = item.file_location.split('.')[item.file_location.split('.').length-1].toLowerCase()
+
+            if(extsCtscan.includes(nameExt)) {
+              media = "/media/upload.png";
+            }
+            else {
+              media = "/media/" + item.file_location;
+            }
+
+            var tmp_tipe = "X-Ray";
+            
+            if(item.submission_type == 'ctscan')
+              tmp_tipe = "CT-Scan";
+
+            all_div += 
+                  '<div class="form-row list_submission" onClick=view_edit('+ item.id +')>' +
+                    '<div class="col-md-4">' +
+                    '<img src="' + media + '" class="view_upload_image_latest_submission">' +
+                    '</div>'+
+                    '<div class="col-md-8">' +
+                    item.patient_id + ': '+ capitalize(item.sex)  + ' (' + item.age + ')'+ '<br>' +
+                    tmp_tipe + ': ' + capitalize(item.submission_status) + '<br>' +
+                    tmp_date + '<br><br>' +
+                    '</div>'+
+                  '</div>';
+
+          });
+          $("#my_latest_submissions").append(all_div);
+
+
+          $("#link_all_my_submissions").html("See all submissions (" + resp.cnt_my_submissions + ")");
+        }
+      }
+  });
+
+}
+
+function getTipeFromURL(key){
+    var name = 'tipe';
+    var loc = window.location.href.indexOf(name)
+
+    if(loc > 0) {
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      return results[1] || 0;
+    }
+    else {
+      return 'xray';
+    }
+}
+
+function getRecordIDFromURL(key){
+    var name = 'record_id';
+    var loc = window.location.href.indexOf(name)
+    if(loc > 0) {
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      return results[1] || 0;
+    }
+    else {
+      return undefined;
+    }
+}
+
+function changeFormType(tipe) {
+
+    if(tipe == 'ctscan') {
+      $(".show-xray").css("display", "none");
+    }
+    else {
+      $(".show-xray").css("display", "");
+    }
+}
+
+$(document).ready(function() {
+  var tipe_url = getTipeFromURL();
+  var record_id = getRecordIDFromURL();
+
+  $("#submission_type").val(tipe_url);
+  changeFormType(tipe_url) ;
+  load_my_latest_submissions();
+
+  if( record_id != undefined ) {
+    view_edit(record_id);
+  }
+
+  $("#submit_btn").removeClass("btn-primary");
+  $("#submit_btn").addClass("btn-secondary");
+  $("#submit_btn").prop("disabled", true);
+
+
+  $("input").change(function() {
+    validateForm();
+  });
+
+  $("#patient_id").keyup(function() {
+    validateForm();
+  });
+
+  $("select").change(function() {
+    validateForm();
+  });
+
+
+  $("#fileInput").on('change', function(e){
+    const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+    const extsXray = ["png", "jpg", "jpeg"]
+    const {name, type} = e?.target?.files[0]
+    const nameExt = name.split('.')[name.split('.').length-1].toLowerCase()
+    const typeExt = type.split('/')[type.split('/').length-1].toLowerCase()
+
+    if($("#submission_type").val() === "ctscan" && !extsCtscan.includes(nameExt) && !extsCtscan.includes(typeExt)){
+      alert("Wrong file format")
+      $("#fileInput").val(null)  
+      $("#progress").html("")
+      $('#view_upload_image').removeAttr('src')
+    }
+    else if($("#submission_type").val() === "xray" && !extsXray.includes(nameExt) && !extsXray.includes(typeExt)){
+      alert("Wrong file format")
+      $("#fileInput").val(null)  
+      $("#progress").html("")
+      $('#view_upload_image').removeAttr('src')
+    }else{
+      $("#hidden_submit").submit();
+    }
+
+  });
+
+  $("#formInput").on('submit', function(e){ 
+      e.preventDefault();
+      var size_total = 0;
+      $.ajax({
+          xhr: function() {
+              var xhr = new window.XMLHttpRequest();
+              xhr.upload.addEventListener("progress", function(evt) {
+                  size_total = evt.total;
+                  if (evt.lengthComputable) {
+                      var percentComplete = Math.round(((evt.loaded / evt.total) * 100));
+                      $("#progress").html(" Uploading ..... (" + percentComplete + "%)");
+                      $("#message").html("");
+                  }
+              }, false);
+              return xhr;
+          },
+          type: 'POST',
+          url: '/upload/',
+          data: new FormData(this),
+          contentType: false,
+          cache: false,
+          processData:false,
+          beforeSend: function(){
+              $("#progress").html(" Uploading ..... (0%)");
+
+              $("#submit_btn").removeClass("btn-primary");
+              $("#submit_btn").addClass("btn-secondary");
+              $("#submit_btn").prop("disabled", true);
+              $("#file_location").val("");
+          },
+          error:function(){
+              $("#progress").html(" File upload failed, please try again.");
+          },
+          success: function(resp){
+              var stat = resp.stat;
+              var file_location = resp.file_location;
+              $("#upload_status").val(stat);
+              if(stat == '1'){
+                $("#progress").html(" Uploading Successful " + bytesToSize(size_total));
+                $("#file_location").val(file_location);
+                const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+                const nameExt = file_location.split('.')[file_location.split('.').length-1].toLowerCase()
+
+                if(extsCtscan.includes(nameExt)) {
+                  var url_img_src = "/media/upload.png";
+                  $("#view_upload_image").attr("src", url_img_src);
+                }
+                else {
+                  var url_img_src = "/media/" + file_location;
+                  $("#view_upload_image").attr("src", url_img_src);
+                }
+
+                validateForm();
+                
+
+              }
+              else {
+                $("#progress").html(" Please select a valid file to upload.");
+              }
+          }
+      });
+  });   
+
+  $("#submission_type").change(function(e) {
+    var tipe = $(this).val();
+    changeFormType(tipe);
+    window.location.search = `?tipe=${tipe}`
+  })
+
+  $("#submit_btn").click(function() {
+    var record_id = $("#record_id").val();
+    var patient_id = $("#patient_id").val();
+    var sex = $("#sex").val();
+    var submission_type = $("#submission_type").val();
+    var age = $("#age").val();
+    var fever_temp = $("#fever_temp").val();
+    var fever_duration = $("#fever_duration").val();
+    var other_conditions = $("#other_conditions").val();
+    var comorbidities = $("#comorbidities").val();
+    var interpretation = $("#interpretation").val();
+    var symptom_flu = $("#symptom_flu").prop('checked');
+    var symptom_cough = $("#symptom_cough").prop('checked');
+    var symptom_sore_throat = $("#symptom_sore_throat").prop('checked');
+    var symptom_shiver = $("#symptom_shiver").prop('checked');
+    var symptom_headache = $("#symptom_headache").prop('checked');
+    var symptom_faint = $("#symptom_faint").prop('checked');
+    var symptom_nausea = $("#symptom_nausea").prop('checked');
+    var symptom_diarrhea = $("#symptom_diarrhea").prop('checked');
+    var symptom_muscleache = $("#symptom_muscleache").prop('checked');
+    var symptom_abdominal_pain = $("#symptom_abdominal_pain").prop('checked');
+    var symptom_hard_to_breathe = $("#symptom_hard_to_breathe").prop('checked');
+    var file_location = $("#file_location").val();
+
+    var submit_data = {
+      'record_id': record_id,
+      'patient_id': patient_id,
+      'sex': sex,
+      'submission_type': submission_type,
+      'age':age,
+      'fever_temp':fever_temp,
+      'fever_duration':fever_duration,
+      'other_conditions':other_conditions,
+      'comorbidities':comorbidities,
+      'interpretation':interpretation,
+      'file_location': file_location,
+      'symptom_flu': translate(symptom_flu),
+      'symptom_cough':translate(symptom_cough),
+      'symptom_sore_throat':translate(symptom_sore_throat),
+      'symptom_shiver':translate(symptom_shiver),
+      'symptom_headache':translate(symptom_headache),
+      'symptom_faint':translate(symptom_faint),
+      'symptom_nausea':translate(symptom_nausea),
+      'symptom_diarrhea':translate(symptom_diarrhea),
+      'symptom_muscleache':translate(symptom_muscleache),
+      'symptom_abdominal_pain':translate(symptom_abdominal_pain),
+      'symptom_hard_to_breathe':translate(symptom_hard_to_breathe),
+    };
+    
+    var csrftoken = $("#csrf_token").val();
+
+    $.ajax({
+        headers: { "X-CSRFToken": csrftoken },
+        type: 'POST',
+        url: '/api_insert_update_submission/',
+        data: submit_data,
+        error:function(){
+        },
+        success: function(resp) {
+          alert(resp.msg);
+          load_my_latest_submissions();
+          window.location.reload()
+        }
+    });
+
+
+    
+  });
+
+});
+
+function view_edit(id) {
+
+  $.ajax({
+      type: 'GET',
+      url: '/api_get_submission/?record_id=' + id,
+      error:function(){
+      },
+      success: function(resp){
+        load_existing_data(resp);
+      }
+  });
+
+}
+
+function load_existing_data(data) {
+
+  $("#result_info").hide();
+  $("#submit_btn").show();
+  $("#view_result_image").attr("src", "");    
+  $("select").removeAttr('disabled');
+  $("input").removeAttr('disabled');
+
+  changeFormType(data.submission_type);
+  $("#record_id").val(data.id);
+  $("#patient_id").val(data.patient_id);
+  $("#sex").val(data.sex);
+  $("#submission_type").val(data.submission_type);
+  $("#age").val(data.age);
+  $("#fever_temp").val(data.fever_temp);
+  $("#fever_duration").val(data.fever_duration);
+  $("#other_conditions").val(data.other_conditions);
+  $("#comorbidities").val(data.comorbidities);
+  $("#interpretation").val(data.interpretation);
+  $("#symptom_flu").bootstrapToggle(translateToggle(data.flu));
+  $("#symptom_cough").bootstrapToggle(translateToggle(data.cough));
+  $("#symptom_sore_throat").bootstrapToggle(translateToggle(data.sore_throat));
+  $("#symptom_shiver").bootstrapToggle(translateToggle(data.shiver));
+  $("#symptom_headache").bootstrapToggle(translateToggle(data.headache));
+  $("#symptom_faint").bootstrapToggle(translateToggle(data.faint));
+  $("#symptom_nausea").bootstrapToggle(translateToggle(data.nausea));
+  $("#symptom_diarrhea").bootstrapToggle(translateToggle(data.diarrhea));
+  $("#symptom_muscleache").bootstrapToggle(translateToggle(data.muscleache));
+  $("#symptom_abdominal_pain").bootstrapToggle(translateToggle(data.abdominal_pain));
+  $("#symptom_hard_to_breathe").bootstrapToggle(translateToggle(data.hard_to_breathe));
+  $("#file_location").val(data.file_location);
+  $("#fileInput").val(data.fileInput);
+  $("#upload_status").val(1);
+console.log(data, 'respoonse')
+  var tmp_media = "";
+  const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+  const nameExt = data.file_location.split('.')[data.file_location.split('.').length-1].toLowerCase()
+
+  if(extsCtscan.includes(nameExt)) {
+    tmp_media = "/media/upload.png";
+  }
+  else {
+    tmp_media = "/media/" + data.file_location;
+  }
+  $("#view_upload_image").attr("src", tmp_media);
+
+
+  validateForm();
+
+  if(data.submission_status == 'Completed') {
+    $("#view_result_image").attr("src", "/media/" + data.file_location_result);    
+    $("#result_info").show();    
+
+    var data_dominan = "";
+    if(data.prediction == 'pneumonia' || data.prediction == 'Pneumonia') {
+      data_dominan = Math.round(data.prob_pneu * 100);
+    }
+    else if(data.prediction == 'COVID-19' || data.prediction == 'COVID') {
+      data_dominan = Math.round(data.prob_covid * 100); 
+    }
+    else {
+      data_dominan = Math.round(data.prob_normal * 100);      
+    }
+
+    $("#result_prediction").html(data.prediction + " (" + data_dominan + "%)");    
+    $("#result_prob_normal").html(Math.round(data.prob_normal * 100) + "%");
+    $("#result_prob_pneu").html(Math.round(data.prob_pneu * 100) + "%");
+    $("#result_prob_covid").html(Math.round(data.prob_covid * 100) + "%");
+    $("#submit_btn").hide();
+    $("select").attr('disabled', 'disabled');
+    $("input").attr('disabled', 'disabled');
+  }
+  else {
+    $("#result_info").hide();
+    $("#submit_btn").show();
+    $("#view_result_image").attr("src", "");    
+    $("select").removeAttr('disabled');
+    $("input").removeAttr('disabled');
+  }
+
+
+
+}
+
+
+function bytesToSize(bytes) {
+  var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  for (var i = 0; i < sizes.length; i++) {
+    if (bytes <= 1024) {
+      return bytes + ' ' + sizes[i];
+    } else {
+      bytes = parseFloat(bytes / 1024).toFixed(2)
+    }
+  }
+  return bytes + ' P';
+}
+
+function validateForm() {
+  var record_id = $("#record_id").val();
+  var patient_id = $("#patient_id").val();
+  var sex = $("#sex").val();
+  var tipe = $("#submission_type").val();
+  var age = $("#age").val();
+  var fever_temp = $("#fever_temp").val();
+  var fever_duration = $("#fever_duration").val();
+  var other_conditions = $("#other_conditions").val();
+  var comorbidities = $("#comorbidities").val();
+  var interpretation = $("#interpretation").val();
+  var symptom_cough = $("#symptom_cough").val();
+  var symptom_sore_throat = $("#symptom_sore_throat").val();
+  var symptom_shiver = $("#symptom_shiver").val();
+  var symptom_headache = $("#symptom_headache").val();
+  var symptom_faint = $("#symptom_faint").val();
+  var symptom_nausea = $("#symptom_nausea").val();
+  var symptom_diarrhea = $("#symptom_diarrhea").val();
+  var symptom_muscleache = $("#symptom_muscleache").val();
+  var symptom_abdominal_pain = $("#symptom_abdominal_pain").val();
+  var symptom_hard_to_breathe = $("#symptom_hard_to_breathe").val();
+
+  var upload_status = $("#upload_status").val();
+
+
+  var stat = true;
+  if (patient_id == '' || sex == '' || tipe == '' || upload_status == 0) {
+    stat = false;
+  }
+
+
+  if(tipe == 'xray') {
+    if(age == '' || fever_temp == '' || fever_duration == '' || comorbidities == '' || other_conditions == '' || interpretation == '')
+      stat = false;
+
+  }
+
+
+  if(stat) {
+    $("#submit_btn").removeClass("btn-secondary");
+    $("#submit_btn").addClass("btn-primary");
+    $("#submit_btn").prop("disabled", false);
+    $("#message").html("");
+
+  }
+  else {
+    $("#submit_btn").removeClass("btn-primary");
+    $("#submit_btn").addClass("btn-secondary");
+    $("#submit_btn").prop("disabled", true);
+    $("#message").html("Please fill form above before submission");
+  }
+
+  if(record_id != "") {
+    $("#submit_btn").html("Modify Test");
+  }
+  else {
+    $("#submit_btn").html("Submit Test");
+  }
+}
+
+function translate(str) {
+  if(str == true)
+    return 1;
+  return 0;
+}
+
+function translateToggle(stat) {
+  return stat ? 'on' : 'off';
+}
+
+</script>
+{% endblock %}  

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+  <main id="main">
+
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact" >
+      <div class="container">
+
+        <div style="padding-top: 30px">
+
+        </div>
+
+        <div class="row">
+
+
+          <div class="col-lg-12 d-flex align-items-stretch">
+            <div class="info">
+
+              <div class="form-row">
+                <div class="col-md-12">
+                      <label><h4>My Submission</h4></label> 
+                      &nbsp;&nbsp;
+                      <label>
+                          <a href="/my_submission/" >New Record</a>
+                      </label>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="col-md-12">
+                  <table class="table table-hover" style="max-width:100%">
+                    <thead>
+                      <tr style="text-align: center;">
+                        <th scope="col">#</th>
+                        <th scope="col">Patient ID</th>
+                        <th scope="col">Age</th>
+                        <th scope="col">Sex</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Test Image</th>
+                        <th scope="col">Annotation Result</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Result</th>
+                        <th scope="col">Submission Time</th>
+                        <th scope="col">Process Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in all_my_submissions %}
+                      <tr onclick=my_submission({{ item.id }}) style='cursor: pointer;'>
+                        <th scope="row">{{ forloop.counter  }} </th>
+                        <td>{{ item.patient_id }}</td>
+                        <td>{{ item.age }}</td>
+                        <td>{{ item.sex }}</td>
+                        <td>{{ item.submission_type }}</td>
+                        <td>
+                          {% if  '.zip' in item.file_location %}
+                            <img src="/thumbnail/upload.png" class="view_upload_image_all_submission">
+                          {% else %}
+                            <img src="/thumbnail/{{ item.file_location }}" class="view_upload_image_all_submission">
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if item.submission_status == 'Completed' %}
+                          <img src="/media/{{ item.file_location_result }}" class="view_upload_image_all_submission">
+                          {% else %}
+                          -
+                          {% endif %}
+                        </td>
+                        <td>{{ item.submission_status }}</td>
+                        <td style="text-align: center;">
+                          {% if item.submission_status == 'Completed' %}
+                            {% if item.prediction == 'COVID-19' %}
+                              {{ item.prob_covid_percentage }}%
+                            {% elif item.prediction == 'pneumonia' %}
+                              {{ item.prob_pneu_percentage }}%
+                            {% else %}
+                              {{ item.prob_normal_percentage }}%
+                            {% endif %}
+                            {{ item.prediction }}
+                          {% else %}
+                          -
+                          {% endif %}
+                        </td>
+                        <td>{{ item.ts_submission }}</td>
+                        <td>{{ item.ts_update }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- End Contact Section -->
+
+  </main><!-- End #main -->
+
+  <script type="text/javascript">
+    function my_submission(record_id) {
+      location.href = '/my_submission?record_id=' + record_id;      
+    }
+  </script>
+
+{% endblock %}  
