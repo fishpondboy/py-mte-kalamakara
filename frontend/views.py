@@ -124,7 +124,10 @@ def upload(request):
             # print(settings.MEDIA_ROOT)
             # plt.savefig(settings.MEDIA_ROOT + "/" + filename)
             stat = 1
-
+        elif fileInput.name.lower().endswith('.dcm'):
+            dst_file = direktori_ymd + str(timestamp) + "." + extension
+            filename = fs.save(dst_file, fileInput)
+            stat = 1
         print(fs)
         print(filename)
 
