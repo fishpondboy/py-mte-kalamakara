@@ -90,7 +90,7 @@
                 </div>
                 <div class="form-group col-md-4">
                   <label for="name">Sex</label>
-                  <select class="form-control" name="sex" id="sex" data-rule="sex" data-msg="Select Sex" />>
+                  <select class="form-control" name="sex" id="sex" data-rule="sex" data-msg="Select Sex" >
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>                  
@@ -269,10 +269,9 @@ function load_my_latest_submissions() {
       type: 'GET',
       url: '/api_latest_submission/?limit=5',
       error:function(){
-
+  
       },
       success: function(resp){
-        console.log(resp);
         $("#my_latest_submissions").empty();
         var all_div = "";
         if(resp.stat == 1) {
@@ -280,7 +279,11 @@ function load_my_latest_submissions() {
             var d = new Date(Date.parse(item.ts_submission));
             var tmp_date = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
             var media = "";
-            if(item.file_location.endsWith(".zip")) {
+
+            const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+            const nameExt = item.file_location.split('.')[item.file_location.split('.').length-1].toLowerCase()
+
+            if(extsCtscan.includes(nameExt)) {
               media = "/media/upload.png";
             }
             else {
@@ -351,11 +354,8 @@ function changeFormType(tipe) {
 }
 
 $(document).ready(function() {
-  console.log(window.location.href);
   var tipe_url = getTipeFromURL();
-  console.log(tipe_url);
   var record_id = getRecordIDFromURL();
-  console.log(record_id);
 
   $("#submission_type").val(tipe_url);
   changeFormType(tipe_url) ;
@@ -384,20 +384,36 @@ $(document).ready(function() {
 
 
   $("#fileInput").on('change', function(e){
-    console.log(e);
-    $("#hidden_submit").submit();
+    const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+    const extsXray = ["png", "jpg", "jpeg"]
+    const {name, type} = e?.target?.files[0]
+    const nameExt = name.split('.')[name.split('.').length-1].toLowerCase()
+    const typeExt = type.split('/')[type.split('/').length-1].toLowerCase()
+
+    if($("#submission_type").val() === "ctscan" && !extsCtscan.includes(nameExt) && !extsCtscan.includes(typeExt)){
+      alert("Wrong file format")
+      $("#fileInput").val(null)  
+      $("#progress").html("")
+      $('#view_upload_image').removeAttr('src')
+    }
+    else if($("#submission_type").val() === "xray" && !extsXray.includes(nameExt) && !extsXray.includes(typeExt)){
+      alert("Wrong file format")
+      $("#fileInput").val(null)  
+      $("#progress").html("")
+      $('#view_upload_image').removeAttr('src')
+    }else{
+      $("#hidden_submit").submit();
+    }
+
   });
 
-  $("#formInput").on('submit', function(e){
+  $("#formInput").on('submit', function(e){ 
       e.preventDefault();
-      console.log(e);
-      console.log("AAAAAAAAAAAAAAA");
       var size_total = 0;
       $.ajax({
           xhr: function() {
               var xhr = new window.XMLHttpRequest();
               xhr.upload.addEventListener("progress", function(evt) {
-                  console.log(evt);
                   size_total = evt.total;
                   if (evt.lengthComputable) {
                       var percentComplete = Math.round(((evt.loaded / evt.total) * 100));
@@ -425,14 +441,16 @@ $(document).ready(function() {
               $("#progress").html(" File upload failed, please try again.");
           },
           success: function(resp){
-              console.log(resp);
               var stat = resp.stat;
               var file_location = resp.file_location;
               $("#upload_status").val(stat);
               if(stat == '1'){
                 $("#progress").html(" Uploading Successful " + bytesToSize(size_total));
                 $("#file_location").val(file_location);
-                if(file_location.endsWith(".zip")) {
+                const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+                const nameExt = file_location.split('.')[file_location.split('.').length-1].toLowerCase()
+
+                if(extsCtscan.includes(nameExt)) {
                   var url_img_src = "/media/upload.png";
                   $("#view_upload_image").attr("src", url_img_src);
                 }
@@ -455,6 +473,7 @@ $(document).ready(function() {
   $("#submission_type").change(function(e) {
     var tipe = $(this).val();
     changeFormType(tipe);
+    window.location.search = `?tipe=${tipe}`
   })
 
   $("#submit_btn").click(function() {
@@ -505,7 +524,6 @@ $(document).ready(function() {
       'symptom_abdominal_pain':translate(symptom_abdominal_pain),
       'symptom_hard_to_breathe':translate(symptom_hard_to_breathe),
     };
-    console.log(submit_data);
     
     var csrftoken = $("#csrf_token").val();
 
@@ -515,13 +533,11 @@ $(document).ready(function() {
         url: '/api_insert_update_submission/',
         data: submit_data,
         error:function(){
-          console.log("ASD");
         },
         success: function(resp) {
-          // tmp_stat = resp.stat;
-          console.log(resp)
           alert(resp.msg);
           load_my_latest_submissions();
+          window.location.reload()
         }
     });
 
@@ -532,16 +548,13 @@ $(document).ready(function() {
 });
 
 function view_edit(id) {
-  console.log(id);
 
   $.ajax({
       type: 'GET',
       url: '/api_get_submission/?record_id=' + id,
       error:function(){
-        console.log("ASD");
       },
       success: function(resp){
-        console.log(resp);
         load_existing_data(resp);
       }
   });
@@ -549,7 +562,6 @@ function view_edit(id) {
 }
 
 function load_existing_data(data) {
-  // console.log(data);
 
   $("#result_info").hide();
   $("#submit_btn").show();
@@ -582,9 +594,12 @@ function load_existing_data(data) {
   $("#file_location").val(data.file_location);
   $("#fileInput").val(data.fileInput);
   $("#upload_status").val(1);
-
+console.log(data, 'respoonse')
   var tmp_media = "";
-  if(data.file_location.endsWith(".zip")) {
+  const extsCtscan = ["dicom", "dcm", "zip", "zip"]
+  const nameExt = data.file_location.split('.')[data.file_location.split('.').length-1].toLowerCase()
+
+  if(extsCtscan.includes(nameExt)) {
     tmp_media = "/media/upload.png";
   }
   else {
@@ -666,10 +681,7 @@ function validateForm() {
   var symptom_hard_to_breathe = $("#symptom_hard_to_breathe").val();
 
   var upload_status = $("#upload_status").val();
-  console.log(patient_id );
-  console.log(sex );
-  console.log(tipe);
-  console.log(upload_status );
+
 
   var stat = true;
   if (patient_id == '' || sex == '' || tipe == '' || upload_status == 0) {
@@ -683,7 +695,6 @@ function validateForm() {
 
   }
 
-  console.log("STATUS: " + stat);
 
   if(stat) {
     $("#submit_btn").removeClass("btn-secondary");
