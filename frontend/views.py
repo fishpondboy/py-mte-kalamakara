@@ -28,6 +28,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
 from requests.structures import CaseInsensitiveDict
+import zipfile
 
 proxies = {
   "http": "http://proxy.cs.ui.ac.id:8080",
@@ -79,14 +80,7 @@ def contact(request):
 
 
 def upload(request):
-    print(request.FILES['fileInput'])
-
     direktori_ymd = date.today().strftime('%Y/%m/%d/')
-
-
-    print(settings.MEDIA_ROOT + "/" + direktori_ymd)
-    print(settings.THUMBNAIL_ROOT + "/" + direktori_ymd)
-
     timestamp = int(time.time()*1000.0)
     if request.method == 'POST' and request.FILES['fileInput']:
         fileInput = request.FILES['fileInput']
@@ -111,32 +105,78 @@ def upload(request):
 
         elif fileInput.name.lower().endswith('.zip'):
             dst_file = direktori_ymd + str(timestamp) + "." + extension
+            files = []
 
+            zip_archive = zipfile.ZipFile(fileInput, 'r')
+            for name in zip_archive.namelist():
+                if (not os.path.basename(name).startswith('.') and
+                        not name.endswith('/')):
+                    file = zip_archive.open(name)
+                    files.append(dicom.dcmread(file, force=True))
+            print("file count: {}".format(len(files)))
 
-            # open_lungs = select_open_lungs(str(timestamp), fileInput)
-            # print(open_lungs)
+            # skip files with no SliceLocation (eg scout views)
+            slices = []
+            skipcount = 0
+            for f in files:
+                if hasattr(f, 'SliceLocation'):
+                    slices.append(f)
+                else:
+                    skipcount = skipcount + 1
+
+            print("skipped, no SliceLocation: {}".format(skipcount))
+
+            # ensure they are in the correct order
+            slices = sorted(slices, key=lambda s: s.SliceLocation)
+
+            # pixel aspects, assuming all slices are the same
+            ps = slices[0].PixelSpacing
+            ss = slices[0].SliceThickness
+            ax_aspect = ps[1]/ps[0]
+            sag_aspect = ps[1]/ss
+            cor_aspect = ss/ps[0]
+
+            # create 3D array
+            img_shape = list(slices[0].pixel_array.shape)
+            img_shape.append(len(slices))
+            img3d = np.zeros(img_shape)
+
+            # fill 3D array with the images from the files
+            for i, s in enumerate(slices):
+                img2d = s.pixel_array
+                img3d[:, :, i] = img2d
+
+            # plot 3 orthogonal slices
+            a1 = plt.subplot(2, 2, 1)
+            plt.imshow(img3d[:, :, img_shape[2]//2])
+            a1.set_aspect(ax_aspect)
+
+            a2 = plt.subplot(2, 2, 2)
+            plt.imshow(img3d[:, img_shape[1]//2, :])
+            a2.set_aspect(sag_aspect)
+
+            a3 = plt.subplot(2, 2, 3)
+            plt.imshow(img3d[img_shape[0]//2, :, :].T)
+            a3.set_aspect(cor_aspect)
+
+            plt.show()
             filename = fs.save(dst_file, fileInput)
-            # print(filename_dcm)
-            # ds = dicom.dcmread(fileInput, force=True)
-            # ds.file_meta.TransferSyntaxUID = pydicom.uid.ImplicitVRLittleEndian
-            # plt.imshow( ds.pixel_array)
-            # filename = dst_file + ".png"
-            # print(settings.MEDIA_ROOT)
-            # plt.savefig(settings.MEDIA_ROOT + "/" + filename)
             stat = 1
         elif fileInput.name.lower().endswith('.dcm'):
             dst_file = direktori_ymd + str(timestamp) + "." + extension
             filename = fs.save(dst_file, fileInput)
+            ds = dicom.dcmread(fileInput, force=True)
+            ds.file_meta.TransferSyntaxUID = pydicom.uid.ImplicitVRLittleEndian
+            plt.imshow( ds.pixel_array)
+            plt.show()
+            print(filename)
             stat = 1
-        print(fs)
-        print(filename)
 
         arg = {'stat': stat, 'file_location': filename}
         return JsonResponse(arg, safe=False)
 
     arg = {'stat': '0'}
     return JsonResponse(arg, safe=False)
-
 
 def select_open_lungs(timestamp, file_name):
     selected_imgs = {}
