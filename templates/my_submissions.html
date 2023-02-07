@@ -58,13 +58,21 @@
                         <td>
                           {% if  '.zip' in item.file_location %}
                             <img src="/thumbnail/upload.png" class="view_upload_image_all_submission">
+                          {% elif  '.dcm' in item.file_location %}
+                            <img src="/thumbnail/upload.png" class="view_upload_image_all_submission">   
+                          {% elif  '.dicm' in item.file_location %}
+                            <img src="/thumbnail/upload.png" class="view_upload_image_all_submission">   
                           {% else %}
                             <img src="/thumbnail/{{ item.file_location }}" class="view_upload_image_all_submission">
                           {% endif %}
                         </td>
                         <td>
                           {% if item.submission_status == 'Completed' %}
-                          <img src="/media/{{ item.file_location_result }}" class="view_upload_image_all_submission">
+                            {% if item.file_location_result == '' %}
+                              <img src="/thumbnail/upload.png" class="view_upload_image_all_submission"> 
+                            {% else %}
+                              <img src="/media/{{ item.file_location_result }}" class="view_upload_image_all_submission">
+                            {% endif %}
                           {% else %}
                           -
                           {% endif %}
