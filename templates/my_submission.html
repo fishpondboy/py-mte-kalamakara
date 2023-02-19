@@ -7,6 +7,7 @@
 
     <!-- ======= Contact Section ======= -->
     <section id="contact" >
+      <div id="cover-spin"></div>
       <div class="container">
 
         <div style="padding-top: 30px">
@@ -22,7 +23,7 @@
             <div class="php-email-form">
 
               <div class="form-row">
-                <div class="form-group col-md-8">
+                <div class="form-group col-md-9">
                   <input type="hidden" id="upload_status" value="0">
                   <input type="hidden" id="csrf_token" value='{{ csrf_token }}'>
                   
@@ -41,7 +42,7 @@
                   <label id="progress"></label>
                 </div>
 
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-3">
                   <label for="name">Test Type</label>
                   <select class="form-control" name="submission_type" id="submission_type" data-rule="submission_type" data-msg="Select Type" />>
                     <option value="xray">X-Ray</option>
@@ -344,13 +345,12 @@ function getRecordIDFromURL(key){
 }
 
 function changeFormType(tipe) {
-
-    if(tipe == 'ctscan') {
-      $(".show-xray").css("display", "none");
-    }
-    else {
-      $(".show-xray").css("display", "");
-    }
+  if(tipe == 'ctscan') {
+    $(".show-xray").css("display", "none");
+  }
+  else {
+    $(".show-xray").css("display", "");
+  }
 }
 
 $(document).ready(function() {
@@ -360,9 +360,19 @@ $(document).ready(function() {
   $("#submission_type").val(tipe_url);
   changeFormType(tipe_url) ;
   load_my_latest_submissions();
-
+  
   if( record_id != undefined ) {
-    view_edit(record_id);
+    $("#cover-spin").css("display", "block")
+    $.ajax({
+      type: 'GET',
+      url: '/api_get_submission/?record_id=' + record_id,
+      error:function(){
+      },
+      success: function(resp){
+        load_existing_data(resp);
+        $("#cover-spin").css("display", "none")
+      }
+    });
   }
 
   $("#submit_btn").removeClass("btn-primary");
@@ -404,7 +414,6 @@ $(document).ready(function() {
     }else{
       $("#hidden_submit").submit();
     }
-
   });
 
   $("#formInput").on('submit', function(e){ 
@@ -473,7 +482,11 @@ $(document).ready(function() {
   $("#submission_type").change(function(e) {
     var tipe = $(this).val();
     changeFormType(tipe);
+    $("#cover-spin").css("display", "block")
     window.location.search = `?tipe=${tipe}`
+    setTimeout(()=>{
+      $("#cover-spin").css("display", "none")
+    }, 500)
   })
 
   $("#submit_btn").click(function() {
@@ -548,17 +561,7 @@ $(document).ready(function() {
 });
 
 function view_edit(id) {
-
-  $.ajax({
-      type: 'GET',
-      url: '/api_get_submission/?record_id=' + id,
-      error:function(){
-      },
-      success: function(resp){
-        load_existing_data(resp);
-      }
-  });
-
+  window.location.search = `?record_id=${id}`
 }
 
 function load_existing_data(data) {
@@ -594,7 +597,7 @@ function load_existing_data(data) {
   $("#file_location").val(data.file_location);
   $("#fileInput").val(data.fileInput);
   $("#upload_status").val(1);
-console.log(data, 'respoonse')
+
   var tmp_media = "";
   const extsCtscan = ["dicom", "dcm", "zip", "zip"]
   const nameExt = data.file_location.split('.')[data.file_location.split('.').length-1].toLowerCase()
@@ -611,7 +614,12 @@ console.log(data, 'respoonse')
   validateForm();
 
   if(data.submission_status == 'Completed') {
-    $("#view_result_image").attr("src", "/media/" + data.file_location_result);    
+    if(data.file_location_result){
+      $("#view_result_image").attr("src", "/media/" + data.file_location_result);    
+    }
+    // else{
+    //   $("#view_result_image").attr("src", "/thumbnail/upload.png");    
+    // }
     $("#result_info").show();    
 
     var data_dominan = "";
