@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'frontend',
     'import_export',
     'background_task',
+    'corsheaders',
+    'simple_chatbot'
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'kalamakara.urls'
@@ -137,3 +140,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 THUMBNAIL_ROOT = os.path.join(BASE_DIR, 'thumbnail')
 THUMBNAIL_URL = '/thumbnail/'
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+SIMPLE_CHATBOT = {
+    'responses': (
+        ("frontend.responses.GreetingResponse", "Greeting"),
+        ("frontend.responses.GoodbyeResponse", "Goodbye"),
+    ),
+}
