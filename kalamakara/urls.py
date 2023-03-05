@@ -18,6 +18,7 @@ from django.urls import path
 from frontend.views import home, team, contact, submit_contact, my_submission, my_submissions, upload, api_insert_update_submission, api_latest_submission, api_get_submission, submit_xray, submit_ctscan
 from django.conf import settings
 from django.conf.urls.static import static
+from simple_chatbot.views import SimpleChatbot
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,4 +35,5 @@ urlpatterns = [
     path('api_insert_update_submission/', api_insert_update_submission),
     path('api_get_submission/', api_get_submission),
     path('api_latest_submission/', api_latest_submission),
+    path("chat/", SimpleChatbot.as_view())
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.THUMBNAIL_URL, document_root=settings.THUMBNAIL_ROOT)
