@@ -373,7 +373,7 @@ def api_get_submission(request):
     return JsonResponse(ret, safe=False)
 
 
-@background(schedule=0)
+@background(schedule=5)
 def proses_kalamakara(arg):
     print("PROCESSING ID: " + str(arg))
     submission = Submission.objects.get(id=arg)
@@ -404,9 +404,10 @@ def proses_ctscan(arg):
     url = BASE_URL_CTSCAN + "/uploadfile/"
     print(url)
     r = requests.post(url, files=files)
-    print(r.text)
 
-    parse_json1 = json.loads(r.text)
+    parse_json1 = json.dumps(r.json())
+    parse_json1 = json.loads(parse_json1)
+    parse_json1 = json.loads(parse_json1)
     id_file = ""
     directory = ""
     if 'id' not in parse_json1:
