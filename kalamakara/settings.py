@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'import_export',
     'background_task',
     'corsheaders',
-    
+    'simple_chatbot'
 ]
 
 MIDDLEWARE = [
@@ -140,3 +140,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 THUMBNAIL_ROOT = os.path.join(BASE_DIR, 'thumbnail')
 THUMBNAIL_URL = '/thumbnail/'
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+SIMPLE_CHATBOT = {
+    'responses': (
+        ("frontend.responses.GreetingResponse", "Greeting"),
+        ("frontend.responses.GoodbyeResponse", "Goodbye"),
+    ),
+}
