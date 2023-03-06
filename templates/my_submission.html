@@ -33,7 +33,7 @@
                     <label>Upload X-Ray Image (jpg, png) / CT-Scan (Zipfile DICOM).</label>  
 
                     
-                    <div class="form-control">
+                    <div class="form-control" style="padding: 0.2em;">
                       <input type="file" name="fileInput" id="fileInput"  >
                       <input type="hidden" id="hidden_submit">
 
@@ -59,6 +59,13 @@
                 </div>
                 <div class="form-group col-md-6" >
                   <img id="view_result_image" class="view_upload_image_preview">
+                </div>
+              </div>
+              
+              
+              <div class="form-row">
+                <div class="form-group col-md-12">
+                    <button id="preview_btn" type="button" class="btn btn-info btn-md" style="display:none">Preview</button>
                 </div>
               </div>
 
@@ -295,7 +302,6 @@ function load_my_latest_submissions() {
             
             if(item.submission_type == 'ctscan')
               tmp_tipe = "CT-Scan";
-
             all_div += 
                   '<div class="form-row list_submission" onClick=view_edit('+ item.id +')>' +
                     '<div class="col-md-4">' +
@@ -319,29 +325,18 @@ function load_my_latest_submissions() {
 
 }
 
-function getTipeFromURL(key){
+function getTipeFromURL(){
     var name = 'tipe';
-    var loc = window.location.href.indexOf(name)
-
-    if(loc > 0) {
-      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-      return results[1] || 0;
-    }
-    else {
-      return 'xray';
-    }
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    return params[name]
 }
 
-function getRecordIDFromURL(key){
+function getRecordIDFromURL(){
     var name = 'record_id';
-    var loc = window.location.href.indexOf(name)
-    if(loc > 0) {
-      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-      return results[1] || 0;
-    }
-    else {
-      return undefined;
-    }
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    return params[name]
 }
 
 function changeFormType(tipe) {
@@ -353,10 +348,18 @@ function changeFormType(tipe) {
   }
 }
 
+function previewDicomImg(fileDir){
+  $("#preview_btn").off()
+  $("#preview_btn").css("display", "block")
+  $("#preview_btn").click(function() {
+    window.open(`http://localhost:3000?data=${fileDir}`)
+  });
+}
+
 $(document).ready(function() {
   var tipe_url = getTipeFromURL();
   var record_id = getRecordIDFromURL();
-
+  
   $("#submission_type").val(tipe_url);
   changeFormType(tipe_url) ;
   load_my_latest_submissions();
@@ -370,6 +373,9 @@ $(document).ready(function() {
       },
       success: function(resp){
         load_existing_data(resp);
+        if(resp.submission_type === 'ctscan'){
+          previewDicomImg(resp.file_location)
+        }
         $("#cover-spin").css("display", "none")
       }
     });
@@ -405,6 +411,8 @@ $(document).ready(function() {
       $("#fileInput").val(null)  
       $("#progress").html("")
       $('#view_upload_image').removeAttr('src')
+      $("#preview_btn").off()
+      $("#preview_btn").css("display", "none")
     }
     else if($("#submission_type").val() === "xray" && !extsXray.includes(nameExt) && !extsXray.includes(typeExt)){
       alert("Wrong file format")
@@ -462,6 +470,7 @@ $(document).ready(function() {
                 if(extsCtscan.includes(nameExt)) {
                   var url_img_src = "/media/upload.png";
                   $("#view_upload_image").attr("src", url_img_src);
+                  previewDicomImg(resp.file_location)
                 }
                 else {
                   var url_img_src = "/media/" + file_location;
@@ -560,7 +569,7 @@ $(document).ready(function() {
 
 });
 
-function view_edit(id) {
+function view_edit(id){
   window.location.search = `?record_id=${id}`
 }
 
